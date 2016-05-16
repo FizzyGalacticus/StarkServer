@@ -34,7 +34,7 @@ var getFilesFromDirectory = function(directory, callback) {
 var constructURLFromPath = function(dom, filepath) {
 	var index = filepath.indexOf(dom.baseDirectory);
 	if(index > -1) {
-		return dom.host + filepath.substring(index + dom.baseDirectory.length, filepath.length);
+		return filepath.substring(index + dom.baseDirectory.length, filepath.length);
 	}
 
 	return '';
@@ -69,13 +69,17 @@ SimpleServer.prototype.setupNewDomain = function(dom) {
 	var self = this;
 	getFilesFromDirectory(dom.baseDirectory, function(files) {
 		for (var i = files.length - 1; i >= 0; i--) {
-			var file = files[i];
+			if(dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
+				var file = files[i];
+                var requestURL = constructURLFromPath(dom, file);
+				console.log(requestURL + ' - ' + file);
+				self.dispatcher.onGet(requestURL, function(req, res) {
+                    console.log('Serving: ' + requestURL);
+                    var fileContents = fs.readFileSync(file, 'utf8');
+                    console.log(fileContents);
 
-			if(dom.allowedFileTypes.indexOf(getFileType(file)) > -1) {
-				console.log(constructURLFromPath(dom, file));
-				self.dispatcher.onGet(constructURLFromPath(dom, file), function(req, res) {
 					res.writeHead(200, {'Content-Type': 'text/html'});
-	        		res.end(fs.readFileSync(file));
+	        		res.end(fileContents);
 				});
 			}
 		};
