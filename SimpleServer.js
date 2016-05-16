@@ -14,7 +14,7 @@ var getFileType = function(file) {
 	var suffix = '';
 	for (var i = file.length - 1; i >= 0 && file[i] != '.'; i--) {
 		suffix += file[i];
-	};
+	}
 
 	return suffix.split('').reverse().join('');
 };
@@ -64,25 +64,26 @@ SimpleServer.prototype.setPort = function(port) {
 	this.port = port;
 };
 
+SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
+	this.dispatcher.onGet(requestURL, function(req, res) {
+        var fileContents = fs.readFileSync(file, 'utf8');
+
+		res.writeHead(200, {'Content-Type': 'text/html'});
+		res.end(fileContents);
+	});
+};
+
 SimpleServer.prototype.setupNewDomain = function(dom) {
 	dom.host = removeWWW(dom.host);
 	var self = this;
 	getFilesFromDirectory(dom.baseDirectory, function(files) {
 		for (var i = files.length - 1; i >= 0; i--) {
 			if(dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
-				var file = files[i];
-                var requestURL = constructURLFromPath(dom, file);
-				console.log(requestURL + ' - ' + file);
-				self.dispatcher.onGet(requestURL, function(req, res) {
-                    console.log('Serving: ' + requestURL);
-                    var fileContents = fs.readFileSync(file, 'utf8');
-                    console.log(fileContents);
-
-					res.writeHead(200, {'Content-Type': 'text/html'});
-	        		res.end(fileContents);
-				});
+				var file       = files[i];
+				var requestURL = constructURLFromPath(dom, file);
+				self.generateDispatcherRequest(requestURL, file);
 			}
-		};
+		}
 	});
 };
 
@@ -105,7 +106,7 @@ SimpleServer.prototype.addDomain = function(dom) {
 SimpleServer.prototype.addDomains = function(doms) {
 	for (var i = doms.length - 1; i >= 0; i--) {
 		this.addDomain(doms[i]);
-	};
+	}
 };
 
 SimpleServer.prototype.setAllowedFileTypes = function(host, types) {
