@@ -1,0 +1,28 @@
+{
+  "name": "simpleserver",
+  "version": "0.0.6",
+  "description": "A simple and easy to use NodeJS web server with vhost support.",
+  "main": "SimpleServer.js",
+  "dependencies": {
+    "recursive-readdir": "^2.0.0",
+    "httpdispatcher": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FizzyGalacticus/simpleserver.git"
+  },
+  "keywords": [
+    "web",
+    "server"
+  ],
+  "author": "Dustin L. Dodson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FizzyGalacticus/simpleserver/issues"
+  },
+  "homepage": "https://github.com/FizzyGalacticus/simpleserver#readme"
+}
