@@ -1,5 +1,6 @@
 var fs        = require('fs');
 var path      = require('path');
+var exec      = require('child_process').exec;
 var http      = require('http');
 var recursive = require('recursive-readdir');
 
@@ -40,6 +41,14 @@ var constructURLFromPath = function(dom, filepath) {
 	return '';
 };
 
+var executePHP = function(res, file) {
+	var cmd = 'php ' + file;
+	exec(cmd, function(error, stdout, stderr) {
+		res.writeHead(200, {'Content-Type':'text/html'});
+		res.end(stdout);
+	});
+};
+
 SimpleServer = function() {
 	var self        = this;
 	this.dispatcher = require('httpdispatcher');
@@ -65,12 +74,18 @@ SimpleServer.prototype.setPort = function(port) {
 };
 
 SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
-	this.dispatcher.onGet(requestURL, function(req, res) {
-        var fileContents = fs.readFileSync(file, 'utf8');
+	var handleRequest = function(req, res) {
+		if(getFileType(file) == 'php') 
+			executePHP(res, file);
+		else {
+			var response = fs.readFileSync(file, 'utf8');
 
-		res.writeHead(200, {'Content-Type': 'text/html'});
-		res.end(fileContents);
-	});
+			res.writeHead(200, {'Content-Type': 'text/html'});
+			res.end(response);
+		}
+	};
+
+	this.dispatcher.onGet(requestURL, handleRequest);
 };
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
