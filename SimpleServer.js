@@ -65,7 +65,7 @@ SimpleServer = function() {
 
 	this.dispatcher.onError(function(req, res) {
 	    res.writeHead(404);
-	    res.end('404 - Could not find ' + req.headers.host + req.url);
+	    res.end('404 - Page does not exist.');
 	});
 };
 
