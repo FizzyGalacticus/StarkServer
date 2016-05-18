@@ -75,7 +75,7 @@ SimpleServer.prototype.setPort = function(port) {
 };
 
 SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
-	var handleRequest = function(req, res) {
+	var handleGetRequest = function(req, res) {
 		if(getFileType(file) == 'php') 
 			executePHP(res, file);
 		else {
@@ -86,10 +86,24 @@ SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
 		}
 	};
 
-	this.dispatcher.onGet(requestURL, handleRequest);
+	var handlePostRequest = function(req, res) {
+		if(getFileType(file) == 'php') 
+			executePHP(res, file);
+		else {
+			var response = fs.readFileSync(file, 'utf8');
 
-	if(!this.indexSet && requestURL.indexOf('index') > -1)
-		this.dispatcher.onGet('/', handleRequest);
+			res.writeHead(200, {'Content-Type': 'text/html'});
+			res.end(response);
+		}
+	};
+
+	this.dispatcher.onGet(requestURL, handleGetRequest);
+	this.dispatcher.onPost(requestURL, handlePostRequest);
+
+	if(!this.indexSet && requestURL.indexOf('index') > -1) {
+		this.generateDispatcherRequest('/', file);
+		this.indexSet = true;
+	}
 };
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
