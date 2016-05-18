@@ -54,6 +54,7 @@ SimpleServer = function() {
 	this.dispatcher = require('httpdispatcher');
 	this.domains    = [];
 	this.port       = 8080;
+	this.indexSet   = false;
 	this.server     = http.createServer(function(req, res) {
 		try {
 	        self.dispatcher.dispatch(req, res);
@@ -86,6 +87,9 @@ SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
 	};
 
 	this.dispatcher.onGet(requestURL, handleRequest);
+
+	if(!this.indexSet && requestURL.indexOf('index') > -1)
+		this.dispatcher.onGet('/', handleRequest);
 };
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
