@@ -111,7 +111,7 @@ SimpleServer.prototype.setupNewDomain = function(dom) {
 	var self = this;
 	getFilesFromDirectory(dom.baseDirectory, function(files) {
 		for (var i = files.length - 1; i >= 0; i--) {
-			if(dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
+			if(dom.allowedFileTypes == '*' || dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
 				var file       = files[i];
 				var requestURL = constructURLFromPath(dom, file);
 				self.generateDispatcherRequest(requestURL, file);
@@ -157,3 +157,5 @@ SimpleServer.prototype.start = function() {
 	    console.log('Listening on: http://localhost:%s', self.port);
 	});
 };
+
+module.exports = new SimpleServer();
