@@ -74,7 +74,9 @@ SimpleServer.prototype.setPort = function(port) {
 	this.port = port;
 };
 
-SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
+SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
+	var requestURL = constructURLFromPath(dom, file);
+
 	var handleGetRequest = function(req, res) {
 		if(getFileType(file) == 'php') 
 			executePHP(res, file);
@@ -95,6 +97,9 @@ SimpleServer.prototype.generateDispatcherRequest = function(requestURL, file) {
 			res.writeHead(200, {'Content-Type': 'text/html'});
 			res.end(response);
 		}
+
+		if(dom.onPost !== undefined)
+			dom.onPost(req.params, file);
 	};
 
 	this.dispatcher.onGet(requestURL, handleGetRequest);
@@ -110,11 +115,12 @@ SimpleServer.prototype.setupNewDomain = function(dom) {
 	dom.host = removeWWW(dom.host);
 	var self = this;
 	getFilesFromDirectory(dom.baseDirectory, function(files) {
-		for (var i = files.length - 1; i >= 0; i--) {
-			if(dom.allowedFileTypes == '*' || dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
-				var file       = files[i];
-				var requestURL = constructURLFromPath(dom, file);
-				self.generateDispatcherRequest(requestURL, file);
+		if(files !== undefined) {
+			for (var i = files.length - 1; i >= 0; i--) {
+				if(dom.allowedFileTypes == '*' || dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
+					var file       = files[i];
+					self.generateDispatcherRequest(dom, file);
+				}
 			}
 		}
 	});
@@ -137,8 +143,9 @@ SimpleServer.prototype.addDomain = function(dom) {
 
 //Takes an array of JSON objects as described above
 SimpleServer.prototype.addDomains = function(doms) {
-	for (var i = doms.length - 1; i >= 0; i--) {
-		this.addDomain(doms[i]);
+	for (var key in doms) {
+		if(key !== undefined)
+		this.addDomain(doms[key]);
 	}
 };
 
