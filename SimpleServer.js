@@ -50,12 +50,14 @@ var executePHP = function(res, file) {
 };
 
 SimpleServer = function() {
-	var self        = this;
-	this.dispatcher = require('httpdispatcher');
-	this.domains    = [];
-	this.port       = 8080;
-	this.indexSet   = false;
-	this.server     = http.createServer(function(req, res) {
+	var self            = this;
+	this.dispatcher     = require('httpdispatcher');
+	this.domains        = [];
+	this.port           = 8080;
+	this.domainIndexSet = {};
+	this.mimeTypeLookup = require('mime-types').lookup;
+
+	this.server         = http.createServer(function(req, res) {
 		try {
 	        self.dispatcher.dispatch(req, res);
 	    }
@@ -76,15 +78,17 @@ SimpleServer.prototype.setPort = function(port) {
 
 SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	var requestURL = constructURLFromPath(dom, file);
+	var mimeType   = this.mimeTypeLookup(getFileType(file));
 
 	var handleGetRequest = function(req, res) {
 		if(getFileType(file) == 'php') 
 			executePHP(res, file);
 		else {
-			var response = fs.readFileSync(file, 'utf8');
+			res.writeHead(200, {'Content-Type': mimeType});
 
-			res.writeHead(200, {'Content-Type': 'text/html'});
-			res.end(response);
+			fs.readFile(file, function(error, response) {
+				res.end(response);
+			});
 		}
 	};
 
@@ -92,10 +96,11 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 		if(getFileType(file) == 'php') 
 			executePHP(res, file);
 		else {
-			var response = fs.readFileSync(file, 'utf8');
+			res.writeHead(200, {'Content-Type': mimeType});
 
-			res.writeHead(200, {'Content-Type': 'text/html'});
-			res.end(response);
+			fs.readFile(file, function(error, response) {
+				res.end(response);
+			});
 		}
 
 		if(dom.onPost !== undefined)
@@ -105,9 +110,9 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	this.dispatcher.onGet(requestURL, handleGetRequest);
 	this.dispatcher.onPost(requestURL, handlePostRequest);
 
-	if(!this.indexSet && requestURL.indexOf('index') > -1) {
+	if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
 		this.generateDispatcherRequest('/', file);
-		this.indexSet = true;
+		this.domainIndexSet[dom.host] = true;
 	}
 };
 
@@ -144,8 +149,9 @@ SimpleServer.prototype.addDomain = function(dom) {
 //Takes an array of JSON objects as described above
 SimpleServer.prototype.addDomains = function(doms) {
 	for (var key in doms) {
-		if(key !== undefined)
-		this.addDomain(doms[key]);
+		if(key !== undefined) {
+			this.addDomain(doms[key]);
+		}
 	}
 };
 
