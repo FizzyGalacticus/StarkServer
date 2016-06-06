@@ -107,23 +107,24 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 			dom.onPost(req.params, file);
 	};
 
-	this.dispatcher.onGet(requestURL, handleGetRequest);
-	this.dispatcher.onPost(requestURL, handlePostRequest);
+	dom.dispatcher.onGet(requestURL, handleGetRequest);
+	dom.dispatcher.onPost(requestURL, handlePostRequest);
 
-	if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
+	/*if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
 		this.generateDispatcherRequest('/', file);
 		this.domainIndexSet[dom.host] = true;
-	}
+	}*/
 };
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
-	dom.host = removeWWW(dom.host);
-	var self = this;
+	dom.host       = removeWWW(dom.host);
+	dom.dispatcher = require('httpdispatcher');
+	var self       = this;
 	getFilesFromDirectory(dom.baseDirectory, function(files) {
 		if(files !== undefined) {
 			for (var i = files.length - 1; i >= 0; i--) {
 				if(dom.allowedFileTypes == '*' || dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
-					var file       = files[i];
+					var file = files[i];
 					self.generateDispatcherRequest(dom, file);
 				}
 			}
