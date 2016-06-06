@@ -11,6 +11,15 @@ var removeWWW = function(url) {
 	return url;
 };
 
+var removePort = function(host) {
+	indexOfPort = host.indexOf(':');
+
+	if(indexOfPort > -1) 
+		return host.substring(0, indexOfPort);
+
+	return host;
+};
+
 var getFileType = function(file) {
 	var suffix = '';
 	for (var i = file.length - 1; i >= 0 && file[i] != '.'; i--) {
@@ -59,16 +68,20 @@ SimpleServer = function() {
 
 	this.server         = http.createServer(function(req, res) {
 		try {
-	        self.dispatcher.dispatch(req, res);
+			var requestedHost = req.headers.host;
+			requestedHost     = removeWWW(requestedHost);
+			requestedHost     = removePort(requestedHost);
+			
+			for(var i in self.domains) {
+				if(requestedHost == self.domains[i].host)
+					self.domains[i].dispatcher.dispatch(req, res);
+			}
+
+	        // self.dispatcher.dispatch(req, res);
 	    }
 	    catch(err) {
 	        console.log(err);
 	    }
-	});
-
-	this.dispatcher.onError(function(req, res) {
-	    res.writeHead(404);
-	    res.end('404 - Page does not exist.');
 	});
 };
 
@@ -110,10 +123,11 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	dom.dispatcher.onGet(requestURL, handleGetRequest);
 	dom.dispatcher.onPost(requestURL, handlePostRequest);
 
-	/*if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
-		this.generateDispatcherRequest('/', file);
+	if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
+		dom.dispatcher.onGet('/', handleGetRequest);
+		dom.dispatcher.onPost('/', handlePostRequest);
 		this.domainIndexSet[dom.host] = true;
-	}*/
+	}
 };
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
@@ -129,6 +143,11 @@ SimpleServer.prototype.setupNewDomain = function(dom) {
 				}
 			}
 		}
+	});
+
+	dom.dispatcher.onError(function(req, res) {
+	    res.writeHead(404);
+	    res.end('404 - Page does not exist.');
 	});
 };
 
