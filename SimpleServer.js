@@ -100,6 +100,7 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 		if(getFileType(file) == 'php') 
 			executePHP(res, file);
 		else {
+			console.log('Received request for: ' + req.headers.host + req.url, 'Sending back: ' + file);
 			res.writeHead(200, {'Content-Type': mimeType});
 
 			fs.readFile(file, function(error, response) {
