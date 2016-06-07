@@ -89,6 +89,21 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	var request    = null;
 	var result     = null;
 
+	var formatParams = function(params) {
+		var retParams = {};
+
+		try{
+	        retParams = Object.keys(params)[0];
+	        retParams = params.replace(/[\\]+/g, '');
+	        retParams = JSON.parse(params);
+	    }
+	    catch(err) {
+	        retParams = params;
+	    }
+
+	    return retParams;
+	};
+
 	var CGICallback = function(mimeType, page) {
 		result.writeHead(200, {'Content-Type':mimeType});
 		result.end(page);
@@ -117,14 +132,15 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	};
 
 	var handlePostRequest = function(req, res) {
+		var sentToCGI = false;
+		var params    = req.params;//formatParams(req.params);
 		request       = req;
 		result        = res;
-		var sentToCGI = false;
 
 		for(var i in self.cgis) {
 			if(self.cgis[i].fileTypes.indexOf(fileType) > -1) {
 				var cgi = require('./' + self.cgis[i].cgiFile);
-				cgi.onGet(file, req.params, CGICallback);
+				cgi.onPost(file, params, CGICallback);
 				sentToCGI = true;
 			}
 		}
