@@ -63,13 +63,10 @@ SimpleServer = function() {
 			var requestedHost = req.headers.host;
 			requestedHost     = removeWWW(requestedHost);
 			requestedHost     = removePort(requestedHost);
-			console.log('Received request for: ' + requestedHost);
 			
 			for(var i in self.domains) {
-				if(requestedHost == self.domains[i].host) {
-					console.log('Sending request to dom: ' + self.domains[i].host);
+				if(requestedHost == self.domains[i].host)
 					self.domains[i].dispatcher.dispatch(req, res);
-				}
 			}
 
 	        // self.dispatcher.dispatch(req, res);
@@ -147,8 +144,6 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	dom.dispatcher.onGet(requestURL, handleGetRequest);
 	dom.dispatcher.onPost(requestURL, handlePostRequest);
 
-	console.log('Mapping file to dom: ', 'File: ' + file, 'Domain: ' + dom.host);
-
 	if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
 		dom.dispatcher.onGet('/', handleGetRequest);
 		dom.dispatcher.onPost('/', handlePostRequest);
@@ -157,7 +152,6 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 };
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
-	console.log('Setting up domain: ' + dom.host);
 	dom.host       = removeWWW(dom.host);
 	dom.dispatcher = require('httpdispatcher');
 	var self       = this;
