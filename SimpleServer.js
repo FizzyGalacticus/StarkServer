@@ -1,6 +1,5 @@
 var fs        = require('fs');
 var path      = require('path');
-var exec      = require('child_process').exec;
 var http      = require('http');
 var recursive = require('recursive-readdir');
 
@@ -50,18 +49,11 @@ var constructURLFromPath = function(dom, filepath) {
 	return '';
 };
 
-var executePHP = function(res, file) {
-	var cmd = 'php ' + file;
-	exec(cmd, function(error, stdout, stderr) {
-		res.writeHead(200, {'Content-Type':'text/html'});
-		res.end(stdout);
-	});
-};
-
 SimpleServer = function() {
 	var self            = this;
 	this.dispatcher     = require('httpdispatcher');
 	this.domains        = [];
+	this.cgis           = [];
 	this.port           = 8080;
 	this.domainIndexSet = {};
 	this.mimeTypeLookup = require('mime-types').lookup;
@@ -91,12 +83,31 @@ SimpleServer.prototype.setPort = function(port) {
 
 SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	var requestURL = constructURLFromPath(dom, file);
-	var mimeType   = this.mimeTypeLookup(getFileType(file));
+	var fileType   = getFileType(file);
+	var mimeType   = this.mimeTypeLookup(fileType);
+	var self       = this;
+	var request    = null;
+	var result     = null;
+
+	var CGICallback = function(mimeType, page) {
+		result.writeHead(200, {'Content-Type':mimeType});
+		result.end(page);
+	};
 
 	var handleGetRequest = function(req, res) {
-		if(getFileType(file) == 'php') 
-			executePHP(res, file);
-		else {
+		request       = req;
+		result        = res;
+		var sentToCGI = false;
+
+		for(var i in self.cgis) {
+			if(self.cgis[i].fileTypes.indexOf(fileType) > -1) {
+				var cgi = require('./' + self.cgis[i].cgiFile);
+				cgi.onGet(file, req.params, CGICallback);
+				sentToCGI = true;
+			}
+		}
+
+		if(!sentToCGI) {
 			res.writeHead(200, {'Content-Type': mimeType});
 
 			fs.readFile(file, function(error, response) {
@@ -106,9 +117,19 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	};
 
 	var handlePostRequest = function(req, res) {
-		if(getFileType(file) == 'php') 
-			executePHP(res, file);
-		else {
+		request       = req;
+		result        = res;
+		var sentToCGI = false;
+
+		for(var i in self.cgis) {
+			if(self.cgis[i].fileTypes.indexOf(fileType) > -1) {
+				var cgi = require('./' + self.cgis[i].cgiFile);
+				cgi.onGet(file, req.params, CGICallback);
+				sentToCGI = true;
+			}
+		}
+
+		if(!sentToCGI) {
 			res.writeHead(200, {'Content-Type': mimeType});
 
 			fs.readFile(file, function(error, response) {
@@ -171,6 +192,18 @@ SimpleServer.prototype.addDomains = function(doms) {
 	for (var key in doms) {
 		if(key !== undefined) {
 			this.addDomain(doms[key]);
+		}
+	}
+};
+
+SimpleServer.prototype.addCGI = function(cgi) {
+	this.cgis.push(cgi);
+};
+
+SimpleServer.prototype.addCGIs = function(cgis) {
+	for (var key in cgis) {
+		if(key !== undefined) {
+			this.addCGI(cgis[key]);
 		}
 	}
 };
