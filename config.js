@@ -8,6 +8,12 @@ var config = {
                         //post stuff here
                 }
         }
+    },
+    cgis: {
+        name: {
+            cgiFile: '/path/to/cgi/file',
+            fileTypes:['php']
+        }
     }
 }
 
