@@ -87,7 +87,7 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	var mimeType   = this.mimeTypeLookup(fileType);
 	var self       = this;
 	var request    = null;
-	var result     = null;
+	var response   = null;
 
 	var formatParams = function(params) {
 		var retParams = {};
@@ -105,13 +105,13 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 	};
 
 	var CGICallback = function(mimeType, page) {
-		result.writeHead(200, {'Content-Type':mimeType});
-		result.end(page);
+		response.writeHead(200, {'Content-Type':mimeType});
+		response.end(page);
 	};
 
 	var handleGetRequest = function(req, res) {
 		request       = req;
-		result        = res;
+		response      = res;
 		var sentToCGI = false;
 
 		for(var i in self.cgis) {
@@ -135,7 +135,7 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 		var sentToCGI = false;
 		var params    = req.params;//formatParams(req.params);
 		request       = req;
-		result        = res;
+		response      = res;
 
 		for(var i in self.cgis) {
 			if(self.cgis[i].fileTypes.indexOf(fileType) > -1) {
