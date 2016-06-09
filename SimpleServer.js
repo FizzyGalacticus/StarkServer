@@ -1,7 +1,8 @@
-var fs        = require('fs');
-var path      = require('path');
-var http      = require('http');
-var recursive = require('recursive-readdir');
+var HttpDispatcher = require('httpdispatcher');
+var fs             = require('fs');
+var path           = require('path');
+var http           = require('http');
+var recursive      = require('recursive-readdir');
 
 var removeWWW = function(url) {
 	if(url.indexOf('www') > -1)
@@ -168,7 +169,7 @@ SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 SimpleServer.prototype.setupNewDomain = function(dom) {
 	dom.host       = removeWWW(dom.host);
-	dom.dispatcher = require('httpdispatcher');
+	dom.dispatcher = new HttpDispatcher();
 	var self       = this;
 	
 	var filesReceived = function(files) {
