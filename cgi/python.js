@@ -1,6 +1,6 @@
 var exec  = require('child_process').exec;
 
-PythonCGI = function() {}
+PythonCGI = function() {};
 
 PythonCGI.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});

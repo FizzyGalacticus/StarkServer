@@ -12,7 +12,7 @@ var formatParams = function(params) {
     return retStr;
 };
 
-PHPCGI   = function() {}
+PHPCGI   = function() {};
 
 PHPCGI.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});
