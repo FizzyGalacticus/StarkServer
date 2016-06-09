@@ -51,7 +51,6 @@ var constructURLFromPath = function(dom, filepath) {
 
 SimpleServer = function() {
 	var self            = this;
-	this.dispatcher     = require('httpdispatcher');
 	this.domains        = [];
 	this.cgis           = [];
 	this.port           = 8080;
