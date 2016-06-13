@@ -2,6 +2,7 @@ var HttpDispatcher = require('httpdispatcher');
 var fs             = require('fs');
 var path           = require('path');
 var http           = require('http');
+var https          = require('https');
 var recursive      = require('recursive-readdir');
 
 var removeWWW = function(url) {
@@ -51,30 +52,29 @@ var constructURLFromPath = function(dom, filepath) {
 };
 
 SimpleServer = function() {
-	var self            = this;
 	this.domains        = [];
 	this.cgis           = [];
 	this.port           = 8080;
 	this.domainIndexSet = {};
 	this.mimeTypeLookup = require('mime-types').lookup;
 
-	this.server         = http.createServer(function(req, res) {
-		try {
-			var requestedHost = req.headers.host;
-			requestedHost     = removeWWW(requestedHost);
-			requestedHost     = removePort(requestedHost);
-			
-			for(var i in self.domains) {
-				if(requestedHost == self.domains[i].host)
-					self.domains[i].dispatcher.dispatch(req, res);
-			}
+	this.server = http.createServer(this.handleRequest);
+};
 
-	        // self.dispatcher.dispatch(req, res);
-	    }
-	    catch(err) {
-	        console.log(err);
-	    }
-	});
+SimpleServer.prototype.handleRequest = function(req, res) {
+	try {
+		var requestedHost = req.headers.host;
+		requestedHost     = removeWWW(requestedHost);
+		requestedHost     = removePort(requestedHost);
+		
+		for(var i in this.domains) {
+			if(requestedHost == this.domains[i].host)
+				this.domains[i].dispatcher.dispatch(req, res);
+		}
+    }
+    catch(err) {
+        console.log(err);
+    }
 };
 
 SimpleServer.prototype.setPort = function(port) {
@@ -189,6 +189,18 @@ SimpleServer.prototype.setupNewDomain = function(dom) {
 	    res.writeHead(404);
 	    res.end('404 - Page does not exist.');
 	});
+
+	if(dom.secure) {
+		if(dom.cert !== undefined && dom.key !== undefined) {
+			var serverOptions = {
+				key :fs.readFileSync(dom.key),
+				cert:fs.readFileSync(dom.cert)
+			};
+
+			this.server = https.createServer(serverOptions, this.handleRequest);
+			console.log('Created secure server');
+		}
+	}
 };
 
 /*
