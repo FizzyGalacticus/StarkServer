@@ -3,7 +3,7 @@ var config = require('./config.js');
 
 var server = new SimpleServer();
 server.setHTTPPort(80);
-server.setHTTPSPort(443)
+server.setHTTPSPort(443);
 server.addDomains(config.domains);
 server.addCGIs(config.cgis);
 

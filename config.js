@@ -19,6 +19,6 @@ var config = {
             fileTypes:['php']
         }
     }
-}
+};
 
 module.exports = config;
