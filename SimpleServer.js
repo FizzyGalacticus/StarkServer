@@ -5,6 +5,8 @@ var http           = require('http');
 var https          = require('https');
 var recursive      = require('recursive-readdir');
 
+https.globalAgent.options.secureProtocol = 'SSLv3_method';
+
 var removeWWW = function(url) {
 	if(url.indexOf('www') > -1)
 		return url.substring(4, url.length);
@@ -52,29 +54,30 @@ var constructURLFromPath = function(dom, filepath) {
 };
 
 SimpleServer = function() {
+	var self            = this;
 	this.domains        = [];
 	this.cgis           = [];
 	this.port           = 8080;
 	this.domainIndexSet = {};
 	this.mimeTypeLookup = require('mime-types').lookup;
 
-	this.server = http.createServer(this.handleRequest);
-};
+	this.handleRequest = function(req, res) {
+		try {
+			var requestedHost = req.headers.host;
+			requestedHost     = removeWWW(requestedHost);
+			requestedHost     = removePort(requestedHost);
+			
+			for(var i in self.domains) {
+				if(requestedHost == self.domains[i].host)
+					self.domains[i].dispatcher.dispatch(req, res);
+			}
+	    }
+	    catch(err) {
+	        console.log(err);
+	    }
+	};
 
-SimpleServer.prototype.handleRequest = function(req, res) {
-	try {
-		var requestedHost = req.headers.host;
-		requestedHost     = removeWWW(requestedHost);
-		requestedHost     = removePort(requestedHost);
-		
-		for(var i in this.domains) {
-			if(requestedHost == this.domains[i].host)
-				this.domains[i].dispatcher.dispatch(req, res);
-		}
-    }
-    catch(err) {
-        console.log(err);
-    }
+	this.server = http.createServer(this.handleRequest);
 };
 
 SimpleServer.prototype.setPort = function(port) {
@@ -198,7 +201,6 @@ SimpleServer.prototype.setupNewDomain = function(dom) {
 			};
 
 			this.server = https.createServer(serverOptions, this.handleRequest);
-			console.log('Created secure server');
 		}
 	}
 };
