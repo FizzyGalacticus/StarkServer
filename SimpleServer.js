@@ -57,7 +57,8 @@ SimpleServer = function() {
 	var self            = this;
 	this.domains        = [];
 	this.cgis           = [];
-	this.port           = 8080;
+	this.HTTPPort       = 8080;
+	this.HTTPSPort      = 8081;
 	this.domainIndexSet = {};
 	this.mimeTypeLookup = require('mime-types').lookup;
 
@@ -77,11 +78,24 @@ SimpleServer = function() {
 	    }
 	};
 
-	this.server = http.createServer(this.handleRequest);
+	this.HTTPServer = http.createServer(this.handleRequest);
 };
 
-SimpleServer.prototype.setPort = function(port) {
-	this.port = port;
+SimpleServer.prototype.setHTTPPort = function(port) {
+	this.HTTPPort = port;
+};
+
+SimpleServer.prototype.setSSLPort = function(port) {
+	this.HTTPSPort = port;
+};
+
+SimpleServer.prototype.setSSLOptions = function(opts) {
+	var options = {
+		cert:fs.readFileSync(opts.cert),
+		key :fs.readFileSync(opts.key)
+	};
+
+	this.HTTPSServer = https.createServer(options, this.handleRequest);
 };
 
 SimpleServer.prototype.generateDispatcherRequest = function(dom, file) {
@@ -247,11 +261,25 @@ SimpleServer.prototype.setAllowedFileTypes = function(host, types) {
     }
 };
 
-SimpleServer.prototype.start = function() {
+SimpleServer.prototype.startHTTP = function() {
 	var self = this;
-	this.server.listen(this.port, function(){
-	    console.log('Listening on: http://localhost:%s', self.port);
+	this.HTTPServer.listen(this.HTTPPort, function(){
+	    console.log('Listening on: http://localhost:%s', self.HTTPPort);
 	});
+};
+
+SimpleServer.prototype.startHTTPS = function() {
+	var self = this;
+	this.HTTPSServer.listen(this.HTTPSPort, function(){
+	    console.log('Listening on: http://localhost:%s', self.HTTPSPort);
+	});
+};
+
+SimpleServer.prototype.start = function() {
+	this.startHTTP();
+	if(this.HTTPSServer !== undefined) {
+		this.startHTTPS();
+	}
 };
 
 module.exports = new SimpleServer();

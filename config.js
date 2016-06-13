@@ -1,4 +1,8 @@
 var config = {
+    ssl: {
+        cert:'/path/to/cert/file.pem',
+        key: '/path/to/key/file.pem'
+    },
     domains: {
         name:{
                 host            :'localhost',
