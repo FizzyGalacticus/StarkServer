@@ -4,9 +4,10 @@
   "description": "A simple and easy to use NodeJS web server with vhost support.",
   "main": "SimpleServer.js",
   "dependencies": {
-    "httpdispatcher": "^1.0.0",
+    "httpdispatcher": "FizzyGalacticus/httpdispatcher",
     "mime-types": "^2.1.11",
-    "recursive-readdir": "^2.0.0"
+    "recursive-readdir": "^2.0.0",
+    "urlencode": "^1.1.0"
   },
   "devDependencies": {},
   "scripts": {
