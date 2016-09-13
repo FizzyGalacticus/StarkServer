@@ -82,10 +82,8 @@ Want to contribute? That would be awesome!
 
 I don't use any fancy build tools, as I figured that if there ever comes a time that I need them, then this project has overgrown its original intended scope.
 
-To keep track of different issues, features, bugfixes, etc., I use [Waffle.io](https://waffle.io/FizzyGalacticus/StarkServer).
-
 ### Todos
-For a full list of things that I would like done, please check out the issues!
+To keep track of different issues, features, bugfixes, etc., I use [Waffle.io](https://waffle.io/FizzyGalacticus/StarkServer).
 
 License
 -------
