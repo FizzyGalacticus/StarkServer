@@ -11,16 +11,13 @@ var config = {
         name:{
                 host            :'localhost',
                 baseDirectory   :'/path/to/dir',
-                allowedFileTypes:['js','css','html'],
-                onPost          :function(params, file) {
-                        //post stuff here
-                }
+                allowedFileTypes:['js','css','html']
         }
     },
     cgis: {
         name: {
             cgiFile: '/path/to/cgi/file',
-            fileTypes:['php']
+            fileTypes:['cgi-file-type']
         }
     }
 };
