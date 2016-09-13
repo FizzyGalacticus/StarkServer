@@ -27,11 +27,11 @@ StarkServer requires [Node.js](https://nodejs.org/) v4.5+ to run.
 
 Download and extract the [latest release](https://github.com/FizzyGalacticus/StarkServer/archive/master.zip).
 
-Install the dependencies and devDependencies and start the server.
+Install the dependencies.
 
 ```sh
 $ cd StarkServer
-$ npm install -d
+$ npm install
 ```
 
 ### Configure
