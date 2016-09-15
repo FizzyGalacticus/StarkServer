@@ -81,6 +81,17 @@ StarkServer = function() {
 	this.HTTPServer = http.createServer(this.handleRequest);
 };
 
+StarkServer.prototype.checkIfFileExists = function(file) {
+	try {
+		return fs.statSync(file).isFile();
+	}
+	catch(err) {
+		if(err.code === 'ENOENT')
+			return false;
+		else throw e;
+	}
+};
+
 StarkServer.prototype.setHTTPPort = function(port) {
 	this.HTTPPort = port;
 };
@@ -90,6 +101,11 @@ StarkServer.prototype.setSSLPort = function(port) {
 };
 
 StarkServer.prototype.setSSLOptions = function(opts) {
+	if(!this.checkIfFileExists(opts.cert) || !this.checkIfFileExists(opts.key)) {
+		//log problem with file
+		return;
+	}
+
 	var options = {
 		cert:fs.readFileSync(opts.cert),
 		key :fs.readFileSync(opts.key)
