@@ -1,9 +1,10 @@
-var HttpDispatcher = require('httpdispatcher');
-var fs             = require('fs');
-var path           = require('path');
-var http           = require('http');
-var https          = require('https');
-var recursive      = require('recursive-readdir');
+var HttpDispatcher   = require('httpdispatcher');
+var fs               = require('fs');
+var path             = require('path');
+var http             = require('http');
+var https            = require('https');
+var recursive        = require('recursive-readdir');
+var simpleNodeLogger = require('simple-node-logger');
 
 https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
@@ -61,6 +62,10 @@ StarkServer = function() {
 	this.HTTPSPort      = 8081;
 	this.domainIndexSet = {};
 	this.mimeTypeLookup = require('mime-types').lookup;
+	this.logger         = simpleNodeLogger.createSimpleLogger({
+		logFilePath:'StarkServer.log',
+		timestampFormat:'YY-MM-DD HH:MM:ss'
+	});
 
 	this.handleRequest = function(req, res) {
 		try {
@@ -74,7 +79,7 @@ StarkServer = function() {
 			}
 	    }
 	    catch(err) {
-	        console.log(err);
+	    	self.logger.error('Problem handling request: ', err);
 	    }
 	};
 
@@ -102,7 +107,7 @@ StarkServer.prototype.setSSLPort = function(port) {
 
 StarkServer.prototype.setSSLOptions = function(opts) {
 	if(!this.checkIfFileExists(opts.cert) || !this.checkIfFileExists(opts.key)) {
-		//log problem with file
+		this.logger.error('Invalid SSL cert or key file set in configuration.');
 		return;
 	}
 

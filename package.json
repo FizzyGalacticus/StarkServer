@@ -6,7 +6,8 @@
   "dependencies": {
     "httpdispatcher": "FizzyGalacticus/httpdispatcher",
     "mime-types": "^2.1.11",
-    "recursive-readdir": "^2.0.0"
+    "recursive-readdir": "^2.0.0",
+    "simple-node-logger": "^0.93.12"
   },
   "devDependencies": {},
   "scripts": {
