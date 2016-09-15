@@ -1,8 +1,8 @@
 {
-  "name": "simpleserver",
-  "version": "0.0.6",
-  "description": "A simple and easy to use NodeJS web server with vhost support.",
-  "main": "SimpleServer.js",
+  "name": "starkserver",
+  "version": "1.0",
+  "description": "A simple and easy to use NodeJS web server.",
+  "main": "StarkServer.js",
   "dependencies": {
     "httpdispatcher": "FizzyGalacticus/httpdispatcher",
     "mime-types": "^2.1.11",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FizzyGalacticus/simpleserver.git"
+    "url": "git+https://github.com/FizzyGalacticus/StarkServer.git"
   },
   "keywords": [
     "web",
@@ -24,7 +24,7 @@
   "author": "Dustin L. Dodson",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/FizzyGalacticus/simpleserver/issues"
+    "url": "https://github.com/FizzyGalacticus/StarkServer/issues"
   },
-  "homepage": "https://github.com/FizzyGalacticus/simpleserver#readme"
+  "homepage": "https://github.com/FizzyGalacticus/StarkServer#readme"
 }
