@@ -52,7 +52,10 @@ var config = {
         localhost:{
                 host            :'localhost',
                 baseDirectory   :'/home/www/mywebsite',
-                allowedFileTypes:['js','css','html']
+                allowedFileTypes:['js','css','html'],
+                index:'index.html',
+                filesToIgnore: ['.gitignore'],
+                directoriesToIgnore:['.git']
         }
     },
     cgis: {
