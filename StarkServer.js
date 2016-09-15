@@ -198,10 +198,19 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 	dom.dispatcher.onGet(requestURL, handleGetRequest);
 	dom.dispatcher.onPost(requestURL, handlePostRequest);
 
-	if(this.domainIndexSet[dom.host] === undefined && requestURL.indexOf('index') > -1) {
-		dom.dispatcher.onGet('/', handleGetRequest);
-		dom.dispatcher.onPost('/', handlePostRequest);
-		this.domainIndexSet[dom.host] = true;
+	if(this.domainIndexSet[dom.host] === undefined) {
+		if(dom.index !== undefined) {
+			if(requestURL == ('/' + dom.index)) {
+				dom.dispatcher.onGet('/', handleGetRequest);
+				dom.dispatcher.onPost('/', handlePostRequest);
+				this.domainIndexSet[dom.host] = true;
+			}
+		}
+		else if(requestURL.indexOf('index') > -1){
+			dom.dispatcher.onGet('/', handleGetRequest);
+			dom.dispatcher.onPost('/', handlePostRequest);
+			this.domainIndexSet[dom.host] = true;
+		}
 	}
 };
 
