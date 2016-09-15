@@ -11,7 +11,8 @@ var config = {
         name:{
                 host            :'localhost',
                 baseDirectory   :'/path/to/dir',
-                allowedFileTypes:['js','css','html']
+                allowedFileTypes:['js','css','html'],
+                index           :'/path/to/index/file' //Optional
         }
     },
     cgis: {
