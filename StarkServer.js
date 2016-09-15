@@ -33,11 +33,13 @@ var getFileType = function(file) {
 	return suffix.split('').reverse().join('');
 };
 
-var getFilesFromDirectory = function(directory, callback) {
+var getFilesFromDirectory = function(directory, filesToIgnore, directoriesToIgnore, callback) {
 	var ignoreFunc = function(file, stats) {
-	  return (stats.isDirectory() && 
-	  		 (path.basename(file) == 'node_modules' ||
-	  		  path.basename(file) == '.git'));
+		if(stats.isDirectory() && directoriesToIgnore.indexOf(path.basename(file)) > -1)
+			return true;
+		else if(stats.isFile() && filesToIgnore.indexOf(path.basename(file)) > -1)
+			return true;
+		else return false;
 	};
 	 
 	recursive(directory, ['.htaccess', ignoreFunc], function (err, files) {
@@ -218,6 +220,9 @@ StarkServer.prototype.setupNewDomain = function(dom) {
 	dom.host       = removeWWW(dom.host);
 	dom.dispatcher = new HttpDispatcher();
 	var self       = this;
+
+	var filesToIgnore = (dom.filesToIgnore === undefined ? []:dom.filesToIgnore);
+	var directoriesToIgnore = (dom.directoriesToIgnore === undefined ? []:dom.directoriesToIgnore);
 	
 	var filesReceived = function(files) {
 		if(files !== undefined) {
@@ -230,7 +235,7 @@ StarkServer.prototype.setupNewDomain = function(dom) {
 		}
 	};
 
-	getFilesFromDirectory(dom.baseDirectory, filesReceived);
+	getFilesFromDirectory(dom.baseDirectory, filesToIgnore, directoriesToIgnore, filesReceived);
 
 	dom.dispatcher.onError(function(req, res) {
 	    res.writeHead(404);
@@ -239,12 +244,17 @@ StarkServer.prototype.setupNewDomain = function(dom) {
 
 	if(dom.secure) {
 		if(dom.cert !== undefined && dom.key !== undefined) {
-			var serverOptions = {
-				key :fs.readFileSync(dom.key),
-				cert:fs.readFileSync(dom.cert)
-			};
+			if(!this.checkIfFileExists(dom.cert) || !this.checkIfFileExists(dom.key))
+				this.logger.warn('Path to SSL certificate or key invalid for domain: ' + dom.host);
+			else {
+				var serverOptions = {
+					key :fs.readFileSync(dom.key),
+					cert:fs.readFileSync(dom.cert)
+				};
 
-			this.server = https.createServer(serverOptions, this.handleRequest);
+				this.server = https.createServer(serverOptions, this.handleRequest);
+			}
+
 		}
 	}
 };
@@ -294,14 +304,14 @@ StarkServer.prototype.setAllowedFileTypes = function(host, types) {
 StarkServer.prototype.startHTTP = function() {
 	var self = this;
 	this.HTTPServer.listen(this.HTTPPort, function(){
-	    console.log('Listening on: http://localhost:%s', self.HTTPPort);
+		self.logger.info('Listening on: http://localhost:', self.HTTPPort);
 	});
 };
 
 StarkServer.prototype.startHTTPS = function() {
 	var self = this;
 	this.HTTPSServer.listen(this.HTTPSPort, function(){
-	    console.log('Listening on: http://localhost:%s', self.HTTPSPort);
+	    self.logger.info('Listening on: https://localhost:', self.HTTPSPort);
 	});
 };
 
