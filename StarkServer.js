@@ -59,7 +59,7 @@ var constructURLFromPath = function(dom, filepath) {
 StarkServer = function() {
 	var self            = this;
 	this.domains        = [];
-	this.cgis           = [];
+	this.drivers        = [];
 	this.HTTPPort       = 8080;
 	this.HTTPSPort      = 8081;
 	this.domainIndexSet = {};
@@ -144,7 +144,7 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 	    return retParams;
 	};
 
-	var CGICallback = function(mimeType, page, error) {
+	var DriverCallback = function(mimeType, page, error) {
 		if(error) self.logger.error(error);
 		if(mimeType == 'NOT_SUPPORTED_FILE') {
 			fs.readFile(page, function(error, res) {
@@ -164,17 +164,17 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 	var handleGetRequest = function(req, res) {
 		request       = req;
 		response      = res;
-		var sentToCGI = false;
+		var sentToDriver = false;
 
-		for(var i in self.cgis) {
-			if(self.cgis[i].fileTypes.indexOf(fileType) > -1) {
-				var cgi = require('./' + self.cgis[i].cgiFile);
-				cgi.onGet(file, req.params, CGICallback);
-				sentToCGI = true;
+		for(var i in self.drivers) {
+			if(self.drivers[i].fileTypes.indexOf(fileType) > -1) {
+				var driver = require('./' + self.drivers[i].driverFile);
+				driver.onGet(file, req.params, DriverCallback);
+				sentToDriver = true;
 			}
 		}
 
-		if(!sentToCGI) {
+		if(!sentToDriver) {
 			res.writeHead(200, {'Content-Type': mimeType});
 
 			fs.readFile(file, function(error, response) {
@@ -184,20 +184,20 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 	};
 
 	var handlePostRequest = function(req, res) {
-		var sentToCGI = false;
+		var sentToDriver = false;
 		var params    = req.params;//formatParams(req.params);
 		request       = req;
 		response      = res;
 
-		for(var i in self.cgis) {
-			if(self.cgis[i].fileTypes.indexOf(fileType) > -1) {
-				var cgi = require('./' + self.cgis[i].cgiFile);
-				cgi.onPost(file, params, CGICallback);
-				sentToCGI = true;
+		for(var i in self.drivers) {
+			if(self.drivers[i].fileTypes.indexOf(fileType) > -1) {
+				var driver = require('./' + self.drivers[i].driverFile);
+				driver.onPost(file, params, DriverCallback);
+				sentToDriver = true;
 			}
 		}
 
-		if(!sentToCGI) {
+		if(!sentToDriver) {
 			res.writeHead(200, {'Content-Type': mimeType});
 
 			fs.readFile(file, function(error, response) {
@@ -292,14 +292,14 @@ StarkServer.prototype.addDomains = function(doms) {
 	}
 };
 
-StarkServer.prototype.addCGI = function(cgi) {
-	this.cgis.push(cgi);
+StarkServer.prototype.addDriver = function(driver) {
+	this.drivers.push(driver);
 };
 
-StarkServer.prototype.addCGIs = function(cgis) {
-	for (var key in cgis) {
+StarkServer.prototype.addDrivers = function(drivers) {
+	for (var key in drivers) {
 		if(key !== undefined) {
-			this.addCGI(cgis[key]);
+			this.addDriver(drivers[key]);
 		}
 	}
 };

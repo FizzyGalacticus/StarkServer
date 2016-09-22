@@ -6,7 +6,7 @@ With StarkServer, you can:
 * Specify certain filetypes you'd like to serve.
 * Host multiple domains from the same server (virtual hosts).
 * Serve over HTTP and HTTPS.
-* Easily write new "CGI"s to output to the web in *any* language.
+* Easily write new Drivers to output to the web in *any* language.
 
 ### Tech
 
@@ -36,7 +36,7 @@ $ npm install
 ```
 
 ### Configure
-There exists a JSON config file that is already setup with the options that are needed, just with generic inputs. You will need to make sure the ports are the ones you wish to bind to, the baseDirectory is set (the directory of your website), and any "CGI"s are setup if you need them. An example from my config looks like this:
+There exists a JSON config file that is already setup with the options that are needed, just with generic inputs. You will need to make sure the ports are the ones you wish to bind to, the baseDirectory is set (the directory of your website), and any Drivers are setup if you need them. An example from my config looks like this:
 
 ```js
 var config = {
@@ -58,9 +58,9 @@ var config = {
                 directoriesToIgnore:['.git']
         }
     },
-    cgis: {
+    drivers: {
         name: {
-            cgiFile: 'cgi/php.js',
+            DriverFile: 'drivers/php.js',
             fileTypes:['php']
         }
     }

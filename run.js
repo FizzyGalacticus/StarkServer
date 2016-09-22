@@ -5,7 +5,7 @@ var server = new StarkServer();
 server.setHTTPPort(config.ports.http);
 server.setSSLPort(config.ports.https);
 server.addDomains(config.domains);
-server.addCGIs(config.cgis);
+server.addDrivers(config.drivers);
 
 if(config.ssl !== undefined)
 	server.setSSLOptions(config.ssl);
