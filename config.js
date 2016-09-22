@@ -12,7 +12,7 @@ var config = {
                 host               :'localhost',
                 baseDirectory      :'/path/to/dir',
                 allowedFileTypes   :['js','css','html'],
-                index              :'/path/to/index/file' //Optional,
+                index              :'/path/to/index/file', //Optional,
                 filesToIgnore      :['.gitignore'], //Optional
                 directoriesToIgnore:['.git'] //Optional
         }
