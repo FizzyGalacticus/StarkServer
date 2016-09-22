@@ -41,6 +41,7 @@ Known Issues:
 Requirements:
 * Node interpreter in PATH
 * Must have "//NODE" at the very beginning of .js files that are to be interpreted by Node
+* (Unfortunately) currently only works on *nix systems with bash
 
 # Layout of CGI plugin
 ---
