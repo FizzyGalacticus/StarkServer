@@ -144,9 +144,21 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 	    return retParams;
 	};
 
-	var CGICallback = function(mimeType, page) {
-		response.writeHead(200, {'Content-Type':mimeType});
-		response.end(page);
+	var CGICallback = function(mimeType, page, error) {
+		if(error) self.logger.error(error);
+		if(mimeType == 'NOT_SUPPORTED_FILE') {
+			fs.readFile(page, function(error, res) {
+				if(error)
+					self.logger.error(error);
+
+				response.writeHead(200, {'Content-Type':mimeType});
+				response.end(res);	
+			});			
+		}
+		else {
+			response.writeHead(200, {'Content-Type':self.mimeTypeLookup(page)});
+			response.end(page);
+		}
 	};
 
 	var handleGetRequest = function(req, res) {
