@@ -95,7 +95,7 @@ StarkServer.prototype.checkIfFileExists = function(file) {
 	catch(err) {
 		if(err.code === 'ENOENT')
 			return false;
-		else throw e;
+		else throw err;
 	}
 };
 
