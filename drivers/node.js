@@ -19,12 +19,12 @@ NodeCGI.prototype.execute = function(file, callback, getParams, postParams) {
 
         if(isNodeFile) {
             if(getParams && Object.keys(getParams).length > 0) {
-                cmd  = 'node ' + file + ' ' + JSON.stringify(getParams);
+                cmd  = 'node ' + file + ' \'' + JSON.stringify({mode:"GET", params:getParams}) + '\'';
             }
             else if(postParams && Object.keys(postParams).length > 0) {
-                cmd  = 'node ' + file + ' ' + JSON.stringify(postParams);
+                cmd  = 'node ' + file + ' \'' + JSON.stringify({mode:"POST", params:postParams}) + '\'';
             }
-            else cmd = 'node ' + file;
+            else cmd = 'node ' + file + ' \'' + JSON.stringify({mode:"GET"}) + '\'';
 
             exec(cmd, function(error, stdout, stderr) {
                 callback(self.getMimeType(), stdout, stderr);
