@@ -1,16 +1,16 @@
 var exec = require('child_process').exec;
 
-NodeCGI  = function() {};
+NodeDriver  = function() {};
 
-NodeCGI.prototype.onGet = function(file, params, callback) {
+NodeDriver.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});
 };
 
-NodeCGI.prototype.onPost = function(file, params, callback) {
+NodeDriver.prototype.onPost = function(file, params, callback) {
     this.execute(file, callback, {}, params);
 };
 
-NodeCGI.prototype.execute = function(file, callback, getParams, postParams) {
+NodeDriver.prototype.execute = function(file, callback, getParams, postParams) {
     var self = this;
     var cmd  = '';
     
@@ -37,8 +37,8 @@ NodeCGI.prototype.execute = function(file, callback, getParams, postParams) {
     });
 };
 
-NodeCGI.prototype.getMimeType = function() {
+NodeDriver.prototype.getMimeType = function() {
     return 'text/html';
 };
 
-module.exports = new NodeCGI();
+module.exports = new NodeDriver();

@@ -18,17 +18,17 @@ var formatParams = function(params) {
     return retStr.replace(/'/g, '\'\'');
 };
 
-PHPCGI   = function() {};
+PHPDriver   = function() {};
 
-PHPCGI.prototype.onGet = function(file, params, callback) {
+PHPDriver.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});
 };
 
-PHPCGI.prototype.onPost = function(file, params, callback) {
+PHPDriver.prototype.onPost = function(file, params, callback) {
     this.execute(file, callback, {}, params);
 };
 
-PHPCGI.prototype.execute = function(file, callback, getParams, postParams) {
+PHPDriver.prototype.execute = function(file, callback, getParams, postParams) {
     var self             = this;
     var getParamsString  = formatParams(getParams);
     var postParamsString = formatParams(postParams);
@@ -52,8 +52,8 @@ PHPCGI.prototype.execute = function(file, callback, getParams, postParams) {
     });
 };
 
-PHPCGI.prototype.getMimeType = function() {
+PHPDriver.prototype.getMimeType = function() {
     return 'text/html';
 };
 
-module.exports = new PHPCGI();
+module.exports = new PHPDriver();
