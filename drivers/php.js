@@ -1,24 +1,8 @@
 var exec = require('child_process').exec;
 
-var formatParams = function(params) {
-    var retStr = '';
-    for(var key in params) {
-        //Handle params where everything is in the key
-        if(key.length > 0 && params[key].length === 0)
-            retStr += formatParams(JSON.parse(key));
-
-        if(retStr.length > 0)
-            retStr += '&';
-
-        var formattedParam = encodeURIComponent(params[key]);
-
-        retStr += (key + '=' + formattedParam);
-    }
-
-    return retStr.replace(/'/g, '\'\'');
+PHPDriver   = function(server_vars) {
+    this.server = server_vars;
 };
-
-PHPDriver   = function() {};
 
 PHPDriver.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});
@@ -29,20 +13,30 @@ PHPDriver.prototype.onPost = function(file, params, callback) {
 };
 
 PHPDriver.prototype.execute = function(file, callback, getParams, postParams) {
-    var self             = this;
-    var getParamsString  = formatParams(getParams);
-    var postParamsString = formatParams(postParams);
-    var cmd              = '';
+    var self         = this;
+    var paramObjects = [[this.server, '$_SERVER'], [getParams, '$_GET'], [postParams, '$_POST']];
+    var cmd          = '';
 
-    if(getParamsString.length > 0) {
-        cmd  = 'export SIMPLE_SERVER_QUERY_STRING=\'' + getParamsString + '\';';
-        cmd += 'php -e -r \'parse_str($_SERVER["SIMPLE_SERVER_QUERY_STRING"], $_GET); include "' + file + '";\'';
+    this.server.script_filename = file;
+    this.server.script_name     = file.substring(this.server.document_root.length);
+
+    cmd += 'php -e -r \'';
+
+    for(var i = 0; i < paramObjects.length; i++) {
+        for(var j = 0; j < Object.keys(paramObjects[i][0]).length; j++) {
+            var key   = Object.keys(paramObjects[i][0])[j];
+            var value = paramObjects[i][0][key];
+            if(paramObjects[i][1] == '$_SERVER')
+                key = key.toUpperCase();
+
+            cmd += 'empty(' + paramObjects[i][1] + '["' + key + '"]);';
+            cmd += paramObjects[i][1] + '["' + key + '"] = ' + (typeof value == 'string' ? ('"' + value + '"'):value) + ';';
+        }
     }
-    else if(postParamsString.length > 0) {
-        cmd  = 'export SIMPLE_SERVER_QUERY_STRING=\'' + postParamsString + '\';';
-        cmd += 'php -r \'parse_str($_SERVER["SIMPLE_SERVER_QUERY_STRING"], $_POST); include "' + file + '";\'';
-    }
-    else cmd = 'php ' + file;
+
+    cmd += 'include "' + file + '";';
+    cmd += '\'';
+    cmd = cmd.replace(/\\\'/g, "''");
 
     exec(cmd, function(error, stdout, stderr) {
         callback(self.getMimeType(), stdout);
@@ -56,4 +50,4 @@ PHPDriver.prototype.getMimeType = function() {
     return 'text/html';
 };
 
-module.exports = new PHPDriver();
+module.exports = PHPDriver;

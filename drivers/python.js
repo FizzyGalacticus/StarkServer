@@ -1,6 +1,8 @@
 var exec  = require('child_process').exec;
 
-PythonDriver = function() {};
+PythonDriver = function(server_vars) {
+    this.server = server_vars;
+};
 
 PythonDriver.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});
@@ -22,4 +24,4 @@ PythonDriver.prototype.getMimeType = function() {
     return 'text/html';
 };
 
-module.exports = new PythonDriver();
+module.exports = PythonDriver;

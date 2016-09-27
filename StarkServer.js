@@ -1,10 +1,13 @@
-var HttpDispatcher   = require('httpdispatcher');
+var os               = require('os');
 var fs               = require('fs');
 var path             = require('path');
 var http             = require('http');
 var https            = require('https');
+var HttpDispatcher   = require('httpdispatcher');
 var recursive        = require('recursive-readdir');
 var simpleNodeLogger = require('simple-node-logger');
+
+const SERVER_VERSION = '1.3.3';
 
 https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
@@ -88,6 +91,30 @@ StarkServer = function() {
 	this.HTTPServer = http.createServer(this.handleRequest);
 };
 
+StarkServer.prototype.getServerVariables = function(request) {
+	var port      = (this.HTTPSServer ? this.HTTPSPort:this.HTTPPort);
+	var host      = removePort(request.headers.host);
+	var software  = 'StarkServer/' + SERVER_VERSION + ' (' + os.type() + ')';
+	var signature = software + 'Server at ' + host + ' Port ' + port;
+	var server = {
+		server_software     : software,
+		server_name         : request.connection.servername,
+		request_method      : request.method,
+		query_string        : (request.url.split('?').length > 1 ? request.url.split('?')[1]:''),
+		http_accept         : request.headers.accept,
+		http_accept_encoding: request.headers['accept-encoding'],
+		http_accept_language: request.headers['accept-language'],
+		http_host           : host,
+		htt_user_agent      : request.headers['user-agent'],
+		remote_addr         : request.connection.remoteAddress,
+		server_admin        : 'web@localhost',
+		server_port         : port,
+		server_signature    : signature
+	};
+
+	return server;
+};
+
 StarkServer.prototype.checkIfFileExists = function(file) {
 	try {
 		return fs.statSync(file).isFile();
@@ -168,9 +195,12 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 		for(var i in self.drivers) {
 			if(self.drivers[i].fileTypes.indexOf(fileType) > -1) {
-				var driver = require('./' + self.drivers[i].driverFile);
+				var DriverClass               = require('./' + self.drivers[i].driverFile);
+				var serverVariables           = self.getServerVariables(req);
+				serverVariables.document_root = dom.baseDirectory + '/';
+				var driver                    = new DriverClass(serverVariables);
+				sentToDriver                  = true;
 				driver.onGet(file, req.params, DriverCallback);
-				sentToDriver = true;
 			}
 		}
 
@@ -191,9 +221,12 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 		for(var i in self.drivers) {
 			if(self.drivers[i].fileTypes.indexOf(fileType) > -1) {
-				var driver = require('./' + self.drivers[i].driverFile);
+				var DriverClass               = require('./' + self.drivers[i].driverFile);
+				var serverVariables           = self.getServerVariables(req);
+				serverVariables.document_root = dom.baseDirectory + '/';
+				var driver                    = new DriverClass(serverVariables);
+				sentToDriver                  = true;
 				driver.onPost(file, params, DriverCallback);
-				sentToDriver = true;
 			}
 		}
 

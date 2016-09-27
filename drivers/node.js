@@ -1,6 +1,9 @@
 var exec = require('child_process').exec;
 
-NodeDriver  = function() {};
+NodeDriver  = function(server_vars) {
+    this.server = server_vars;
+    console.log(JSON.stringify(this.server));
+};
 
 NodeDriver.prototype.onGet = function(file, params, callback) {
     this.execute(file, callback, params, {});
@@ -41,4 +44,4 @@ NodeDriver.prototype.getMimeType = function() {
     return 'text/html';
 };
 
-module.exports = new NodeDriver();
+module.exports = NodeDriver;

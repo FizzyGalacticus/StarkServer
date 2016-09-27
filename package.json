@@ -1,6 +1,6 @@
 {
   "name": "starkserver",
-  "version": "1.2.3",
+  "version": "1.3.3",
   "description": "A simple and easy to use NodeJS web server.",
   "main": "StarkServer.js",
   "dependencies": {
