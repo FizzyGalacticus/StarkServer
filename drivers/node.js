@@ -2,7 +2,6 @@ var exec = require('child_process').exec;
 
 NodeDriver  = function(server_vars) {
     this.server = server_vars;
-    console.log(JSON.stringify(this.server));
 };
 
 NodeDriver.prototype.onGet = function(file, params, callback) {
