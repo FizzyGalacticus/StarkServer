@@ -13,20 +13,19 @@ NodeDriver.prototype.onPost = function(file, params, callback) {
 };
 
 NodeDriver.prototype.execute = function(file, callback, getParams, postParams) {
-    var self = this;
+    var self   = this;
+    var params = {
+        server:this.server,
+        get   :getParams,
+        post  :postParams
+    };
     var cmd  = '';
     
     exec('cat ' + file + ' | head -n 1', function(error, stdout, stderr) {
         var isNodeFile = (stdout && stdout.substring(0,6) == '//NODE');
 
         if(isNodeFile) {
-            if(getParams && Object.keys(getParams).length > 0) {
-                cmd  = 'node ' + file + ' \'' + JSON.stringify({mode:"GET", params:getParams}) + '\'';
-            }
-            else if(postParams && Object.keys(postParams).length > 0) {
-                cmd  = 'node ' + file + ' \'' + JSON.stringify({mode:"POST", params:postParams}) + '\'';
-            }
-            else cmd = 'node ' + file + ' \'' + JSON.stringify({mode:"GET"}) + '\'';
+            cmd = 'node ' + file + ' \'' + JSON.stringify(params) + '\'';
 
             exec(cmd, function(error, stdout, stderr) {
                 callback(self.getMimeType(), stdout, stderr);
