@@ -39,10 +39,7 @@ PHPDriver.prototype.execute = function(file, callback, getParams, postParams) {
     cmd = cmd.replace(/\\\'/g, "''");
 
     exec(cmd, function(error, stdout, stderr) {
-        callback(self.getMimeType(), stdout);
-        
-        if(stderr)
-            console.log(stderr);
+        callback(self.getMimeType(), stdout, stderr);
     });
 };
 
