@@ -17,10 +17,10 @@ var config = {
                 directoriesToIgnore:['.git'] //Optional
         }
     },
-    cgis: {
+    drivers: {
         name: {
-            cgiFile: '/path/to/cgi/file',
-            fileTypes:['cgi-file-type']
+            driverFile: '/path/to/driver/file',
+            fileTypes:['driver-file-type']
         }
     }
 };
