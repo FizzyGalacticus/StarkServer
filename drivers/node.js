@@ -25,7 +25,8 @@ NodeDriver.prototype.execute = function(file, callback, getParams, postParams) {
         var isNodeFile = (stdout && stdout.substring(0,6) == '//NODE');
 
         if(isNodeFile) {
-            cmd = 'node ' + file + ' \'' + JSON.stringify(params) + '\'';
+            var paramsStr = JSON.stringify(params).replace(/'/g, '\'"\'"\'');
+            cmd = 'node ' + file + ' \'' + paramsStr + '\'';
 
             exec(cmd, function(error, stdout, stderr) {
                 callback(self.getMimeType(), stdout, stderr);
