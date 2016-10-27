@@ -50,7 +50,7 @@ var config = {
     },
     domains: {
         localhost:{
-                host            :'localhost',
+                host            :['localhost', '127.0.0.1', 'hostname'],
                 baseDirectory   :'/home/www/mywebsite',
                 allowedFileTypes:['js','css','html'],
                 index:'index.html',
