@@ -312,8 +312,27 @@ StarkServer.prototype.setupNewDomain = function(dom) {
  * - allowedFileTypes (optional)
  */
 StarkServer.prototype.addDomain = function(dom) {
-	this.domains.push(dom);
-    this.setupNewDomain(dom);
+	if(Array.isArray(dom.host)) {
+		var hosts = dom.host;
+
+		for(var i = 0; i < hosts.length; i++) {
+			var newDom = {
+				host               :hosts[i],
+				baseDirectory      :dom.baseDirectory,
+				allowedFileTypes   :dom.allowedFileTypes,
+				index              :dom.index,
+				filesToIgnore      :dom.filesToIgnore,
+				directoriesToIgnore:dom.directoriesToIgnore
+			};
+			
+			this.domains.push(newDom);
+			this.setupNewDomain(newDom);
+		}
+	}
+	else {
+		this.domains.push(dom);
+	    this.setupNewDomain(dom);
+	}
 };
 
 //Takes an array of JSON objects as described above
