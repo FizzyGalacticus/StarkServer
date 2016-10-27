@@ -9,7 +9,7 @@ var config = {
     },
     domains: {
         name:{
-                host               :'localhost',
+                host               :['localhost', '127.0.0.1', 'hostname'],
                 baseDirectory      :'/path/to/dir',
                 allowedFileTypes   :['js','css','html'],
                 index              :'/path/to/index/file', //Optional,
