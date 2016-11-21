@@ -1,10 +1,10 @@
 {
   "name": "starkserver",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "A simple and easy to use NodeJS web server.",
   "main": "StarkServer.js",
   "dependencies": {
-    "httpdispatcher": "FizzyGalacticus/httpdispatcher",
+    "httpdispatcher": "^2.0.1",
     "mime-types": "^2.1.11",
     "recursive-readdir": "^2.0.0",
     "simple-node-logger": "^0.93.12"
