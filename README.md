@@ -20,7 +20,6 @@ StarkServer uses the following technologies to serve your pages:
   - recursive-readdir
   - mime-types
   - simple-node-logger
-  - [A modified version of HttpDispatcher](https://github.com/FizzyGalacticus/HttpDispatcher)
 
 ### Installation
 
