@@ -43,9 +43,18 @@ Requirements:
 * Must have "//NODE" at the very beginning of .js files that are to be interpreted by Node
 * (Unfortunately) currently only works on *nix systems with bash
 
+### Exe.js
+This plugin allows the output from a standard executable file to be sent to a web client.
+
+Known Issues:
+* Passing double quotes (e.g. ' **"** ') as a paramter may yield unintended results.
+
+Requirements:
+* None
+
 # Layout of Driver plugin
 ---
-If you are interested in adding a CGI for a new language (which I would greatly appreciate!), or would like to help fix issues and refine existing ones, you will need to know the basic structure of the plugins.
+If you are interested in adding a Driver for a new language (which I would greatly appreciate!), or would like to help fix issues and refine existing ones, you will need to know the basic structure of the plugins.
 
 Here is a breakdown of how the existing Drivers look:
 ```JavaScript
