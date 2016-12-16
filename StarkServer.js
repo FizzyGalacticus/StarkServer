@@ -146,6 +146,10 @@ StarkServer.prototype.setSSLOptions = function(opts) {
 	};
 
 	this.HTTPSServer = https.createServer(options, this.handleRequest);
+	this.HTTPServer = http.createServer(function(req, res) {
+		res.writeHead(302,  {Location: ('https://' + req.headers.host + req.url)});
+    	res.end();
+	});
 };
 
 StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
