@@ -105,7 +105,7 @@ StarkServer.prototype.getServerVariables = function(request) {
 		http_accept_encoding: request.headers['accept-encoding'],
 		http_accept_language: request.headers['accept-language'],
 		http_host           : host,
-		htt_user_agent      : request.headers['user-agent'],
+		http_user_agent     : request.headers['user-agent'],
 		remote_addr         : request.connection.remoteAddress,
 		server_admin        : 'web@localhost',
 		server_port         : port,
@@ -195,9 +195,9 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 		for(var i in self.drivers) {
 			if(self.drivers[i].fileTypes.indexOf(fileType) > -1) {
-				var DriverClass               = require('./' + self.drivers[i].driverFile);
+				var DriverClass               = require(path.join(__dirname, path.normalize(self.drivers[i].driverFile)));
 				var serverVariables           = self.getServerVariables(req);
-				serverVariables.document_root = dom.baseDirectory + '/';
+				serverVariables.document_root = path.normalize(dom.baseDirectory + '/');
 				var driver                    = new DriverClass(serverVariables);
 				sentToDriver                  = true;
 				driver.onGet(file, req.params, DriverCallback);
@@ -221,9 +221,9 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 		for(var i in self.drivers) {
 			if(self.drivers[i].fileTypes.indexOf(fileType) > -1) {
-				var DriverClass               = require('./' + self.drivers[i].driverFile);
+				var DriverClass               = require(path.join(__dirname, path.normalize(self.drivers[i].driverFile)));
 				var serverVariables           = self.getServerVariables(req);
-				serverVariables.document_root = dom.baseDirectory + '/';
+				serverVariables.document_root = path.normalize(dom.baseDirectory + '/');
 				var driver                    = new DriverClass(serverVariables);
 				sentToDriver                  = true;
 				driver.onPost(file, params, DriverCallback);
@@ -273,7 +273,7 @@ StarkServer.prototype.setupNewDomain = function(dom) {
 		if(files !== undefined) {
 			for (var i = files.length - 1; i >= 0; i--) {
 				if(dom.allowedFileTypes == '*' || dom.allowedFileTypes.indexOf(getFileType(files[i])) > -1) {
-					var file = files[i];
+					var file = path.normalize(files[i]);
 					self.generateDispatcherRequest(dom, file);
 				}
 			}
