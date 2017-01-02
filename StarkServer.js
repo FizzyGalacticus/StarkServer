@@ -7,7 +7,7 @@ var HttpDispatcher   = require('httpdispatcher');
 var recursive        = require('recursive-readdir');
 var simpleNodeLogger = require('simple-node-logger');
 
-const SERVER_VERSION = '1.3.3';
+const SERVER_VERSION = '1.6.2';
 
 https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
@@ -287,8 +287,15 @@ StarkServer.prototype.setupNewDomain = function(dom) {
 	getFilesFromDirectory(dom.baseDirectory, filesToIgnore, directoriesToIgnore, filesReceived);
 
 	dom.dispatcher.onError(function(req, res) {
-	    res.writeHead(404);
-	    res.end('404 - Page does not exist.');
+		var fourOhFour           = (dom.error['404'] === undefined ? '404 - Page does not exist.':dom.error['404']);
+		var fourOhFourFilePath   = path.normalize(dom.baseDirectory + '/' + fourOhFour);
+		var fourOhFourFileExists = self.checkIfFileExists(fourOhFourFilePath);
+
+		res.writeHead(404);
+
+		if(fourOhFourFileExists)
+			res.end(fs.readFileSync(fourOhFourFilePath));
+		else res.end(fourOhFour);
 	});
 
 	if(dom.secure) {
@@ -326,7 +333,8 @@ StarkServer.prototype.addDomain = function(dom) {
 				allowedFileTypes   :dom.allowedFileTypes,
 				index              :dom.index,
 				filesToIgnore      :dom.filesToIgnore,
-				directoriesToIgnore:dom.directoriesToIgnore
+				directoriesToIgnore:dom.directoriesToIgnore,
+				error              :dom.error
 			};
 			
 			this.domains.push(newDom);

@@ -14,7 +14,10 @@ var config = {
                 allowedFileTypes   :['js','css','html'],
                 index              :'/path/to/index/file', //Optional,
                 filesToIgnore      :['.gitignore'], //Optional
-                directoriesToIgnore:['.git'] //Optional
+                directoriesToIgnore:['.git'], //Optional
+                error              : {
+                    '404':'path/to/404/page' //Optional
+                }
         }
     },
     drivers: {
