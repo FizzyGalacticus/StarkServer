@@ -7,7 +7,7 @@ var HttpDispatcher   = require('httpdispatcher');
 var recursive        = require('recursive-readdir');
 var simpleNodeLogger = require('simple-node-logger');
 
-const SERVER_VERSION = '1.6.2';
+const SERVER_VERSION = '1.6.3';
 
 https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
@@ -165,8 +165,8 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 		try{
 	        retParams = Object.keys(params)[0];
-	        retParams = params.replace(/[\\]+/g, '');
-	        retParams = JSON.parse(params);
+	        retParams = retParams.replace(/[\\]+/g, '');
+	        retParams = JSON.parse(retParams);
 	    }
 	    catch(err) {
 	        retParams = params;
@@ -219,7 +219,7 @@ StarkServer.prototype.generateDispatcherRequest = function(dom, file) {
 
 	var handlePostRequest = function(req, res) {
 		var sentToDriver = false;
-		var params    = req.params;//formatParams(req.params);
+		var params    = formatParams(req.params);
 		request       = req;
 		response      = res;
 
