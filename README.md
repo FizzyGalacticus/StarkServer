@@ -83,10 +83,7 @@ $ sudo node run.js
 
 Want to contribute? That would be awesome!
 
-I don't use any fancy build tools, as I figured that if there ever comes a time that I need them, then this project has overgrown its original intended scope.
-
-### Todos
-To keep track of different issues, features, bugfixes, etc., I use [Waffle.io](https://waffle.io/FizzyGalacticus/StarkServer).
+I use [Waffle.io](https://waffle.io/FizzyGalacticus/StarkServer) to keep track of issues for this project.
 
 License
 -------
