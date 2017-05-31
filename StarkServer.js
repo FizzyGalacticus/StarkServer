@@ -13,7 +13,7 @@ var HttpDispatcher = require('httpdispatcher');
 var recursive = require('recursive-readdir');
 var simpleNodeLogger = require('simple-node-logger');
 
-var SERVER_VERSION = '1.6.3';
+var SERVER_VERSION = '1.7';
 
 https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
