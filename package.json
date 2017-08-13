@@ -4,6 +4,8 @@
   "description": "A simple and easy to use NodeJS web server.",
   "main": "StarkServer.js",
   "dependencies": {
+    "babel-preset-es2016": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1",
     "httpdispatcher": "^2.0.1",
     "mime-types": "^2.1.11",
     "recursive-readdir": "^2.0.0",

@@ -2,8 +2,88 @@
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var Domain = function () {
+	function Domain(hosts, baseDirectory) {
+		_classCallCheck(this, Domain);
+
+		if (!hosts || !baseDirectory) {
+			console.error('Both hosts and baseDirectory must be set for Domain object!');
+			return;
+		}
+
+		this.hosts = hosts;
+		this.baseDirectory = baseDirectory;
+	}
+
+	_createClass(Domain, [{
+		key: 'handleRequest',
+		value: function handleRequest(req, res) {}
+	}]);
+
+	return Domain;
+}();
+
+module.exports = Domain;
+
+var ServerUtil = function () {
+	function ServerUtil() {
+		_classCallCheck(this, ServerUtil);
+	}
+
+	_createClass(ServerUtil, null, [{
+		key: 'getFilesFromDirectory',
+		value: function getFilesFromDirectory(directory, typesToIgnore, dirsToIgnore) {
+			var ignoreFunc = function ignoreFunc(file, stats) {
+				if (stats.isDirectory() && dirsToIgnore && dirsToIgnore.indexOf(path.basename(file)) > -1) return true;else if (stats.isFile() && typesToIgnore && typesToIgnore.indexOf(path.basename(file)) > -1) return true;else return false;
+			};
+
+			return new Promise(function (resolve, reject) {
+				recursive(directory, ['.htaccess', ignoreFunc], function (err, files) {
+					resolve(files);
+					if (err) reject(err);
+				});
+			});
+		}
+	}]);
+
+	return ServerUtil;
+}();
+
+var doTheThing = function () {
+	var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+		var files;
+		return regeneratorRuntime.wrap(function _callee$(_context) {
+			while (1) {
+				switch (_context.prev = _context.next) {
+					case 0:
+						_context.next = 2;
+						return ServerUtil.getFilesFromDirector('/home/dustin/dev/personal/starkserver/src');
+
+					case 2:
+						files = _context.sent;
+
+						console.log(files);
+
+					case 4:
+					case 'end':
+						return _context.stop();
+				}
+			}
+		}, _callee, undefined);
+	}));
+
+	return function doTheThing() {
+		return _ref.apply(this, arguments);
+	};
+}();
+
+doTheThing();
+
+module.exports = ServerUtil;
 var os = require('os');
 var fs = require('fs');
 var path = require('path');

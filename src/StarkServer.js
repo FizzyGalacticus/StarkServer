@@ -1,67 +1,18 @@
 let os               = require('os');
 let fs               = require('fs');
-let path             = require('path');
 let http             = require('http');
 let https            = require('https');
-let HttpDispatcher   = require('httpdispatcher');
-let recursive        = require('recursive-readdir');
 let simpleNodeLogger = require('simple-node-logger');
+let util             = require('./ServerUtil.js');
+let Domain           = require('./Domain.js');
 
 const SERVER_VERSION = '1.7.0';
 
 https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
-let removeWWW = (url) => {
-	if(url.indexOf('www') > -1)
-		return url.substring(4, url.length);
-
-	return url;
-};
-
-let removePort = (host) => {
-	let indexOfPort = host.indexOf(':');
-
-	if(indexOfPort > -1) 
-		return host.substring(0, indexOfPort);
-
-	return host;
-};
-
-let getFileType = (file) => {
-	let suffix = '';
-	for (let i = file.length - 1; i >= 0 && file[i] != '.'; i--) {
-		suffix += file[i];
-	}
-
-	return suffix.split('').reverse().join('');
-};
-
-let getFilesFromDirectory = (directory, filesToIgnore, directoriesToIgnore, callback) => {
-	let ignoreFunc = (file, stats) => {
-		if(stats.isDirectory() && directoriesToIgnore.indexOf(path.basename(file)) > -1)
-			return true;
-		else if(stats.isFile() && filesToIgnore.indexOf(path.basename(file)) > -1)
-			return true;
-		else return false;
-	};
-	 
-	recursive(directory, ['.htaccess', ignoreFunc],  (err, files) => {
-	  callback(files);
-	});
-};
-
-let constructURLFromPath = (dom, filepath) => {
-	let index = filepath.indexOf(dom.baseDirectory);
-	if(index > -1) {
-		return filepath.substring(index + dom.baseDirectory.length, filepath.length);
-	}
-
-	return '';
-};
-
 class StarkServer {
 	constructor() {
-		this.domains        = [];
+		this.domains        = {};
 		this.drivers        = [];
 		this.HTTPPort       = 8080;
 		this.HTTPSPort      = 8081;
@@ -74,13 +25,17 @@ class StarkServer {
 
 		this.handleRequest = (req, res) => {
 			try {
-				let requestedHost = req.headers.host;
-				requestedHost     = removeWWW(requestedHost);
-				requestedHost     = removePort(requestedHost);
+				let requestedHost = util.getHostFromUrl(req.headers.host);
+				requestedHost     = util.removePortFromHost(requestedHost);
+
+				let domainKeys = Object.keys(this.domains);
 				
-				for(let i in this.domains) {
-					if(requestedHost == this.domains[i].host)
-						this.domains[i].dispatcher.dispatch(req, res);
+				for(let i = 0; i < domainKeys.length; i++) {
+					let key = domainKeys[i];
+					let domain = this.domains[key];
+
+					if(domain.getHosts().indexOf(requestedHost) > -1)
+						domain.handleRequest(req, res);
 				}
 		    }
 		    catch(err) {
@@ -91,9 +46,9 @@ class StarkServer {
 		this.HTTPServer = http.createServer(this.handleRequest);
 	}
 
-	getServerletiables(request) {
+	getServerVariables(request) {
 		let port      = (this.HTTPSServer ? this.HTTPSPort:this.HTTPPort);
-		let host      = removePort(request.headers.host);
+		let host      = util.getHostFromUrl(request.headers.host);
 		let software  = 'StarkServer/' + SERVER_VERSION + ' (' + os.type() + ')';
 		let signature = software + 'Server at ' + host + ' Port ' + port;
 		let server = {
@@ -113,17 +68,6 @@ class StarkServer {
 		};
 
 		return server;
-	}
-
-	checkIfFileExists(file) {
-		try {
-			return fs.statSync(file).isFile();
-		}
-		catch(err) {
-			if(err.code === 'ENOENT')
-				return false;
-			else throw err;
-		}
 	}
 
 	setHTTPPort(port) {
@@ -152,120 +96,6 @@ class StarkServer {
 		});
 	}
 
-	generateDispatcherRequest(dom, file) {
-		let requestURL = constructURLFromPath(dom, file);
-		let fileType   = getFileType(file);
-		let mimeType   = this.mimeTypeLookup(fileType);
-		let request    = null;
-		let response   = null;
-
-		let formatParams = (params) => {
-			console.log(params);
-			let retParams = {};
-
-			try{
-		        retParams = Object.keys(params)[0];
-		        retParams = retParams.replace(/[\\]+/g, '');
-		        retParams = JSON.parse(retParams);
-		    }
-		    catch(err) {
-		        retParams = params;
-		    }
-
-		    console.log(retParams);
-		    return retParams;
-		};
-
-		let DriverCallback = (mimeType, page, error) => {
-			if(error) this.logger.error(error);
-			if(mimeType == 'NOT_SUPPORTED_FILE') {
-				fs.readFile(page, (error, res) => {
-					if(error)
-						this.logger.error(error);
-
-					response.writeHead(200, {'Content-Type':mimeType});
-					response.end(res);	
-				});			
-			}
-			else {
-				response.writeHead(200, {'Content-Type':this.mimeTypeLookup(page)});
-				response.end(page);
-			}
-		};
-
-		let handleGetRequest = (req, res) => {
-			request       = req;
-			response      = res;
-			let sentToDriver = false;
-
-			for(let i in this.drivers) {
-				if(this.drivers[i].fileTypes.indexOf(fileType) > -1) {
-					let DriverClass               = require(path.join(__dirname, path.normalize(this.drivers[i].driverFile)));
-					let serverletiables           = this.getServerletiables(req);
-					serverletiables.document_root = path.normalize(dom.baseDirectory + '/');
-					let driver                    = new DriverClass(serverletiables);
-					sentToDriver                  = true;
-					driver.onGet(file, req.params, DriverCallback);
-				}
-			}
-
-			if(!sentToDriver) {
-				res.writeHead(200, {'Content-Type': mimeType});
-
-				fs.readFile(file, (error, response) => {
-					res.end(response);
-				});
-			}
-		};
-
-		let handlePostRequest = (req, res) => {
-			let sentToDriver = false;
-			let params    = formatParams(req.params);
-			request       = req;
-			response      = res;
-
-			for(let i in this.drivers) {
-				if(this.drivers[i].fileTypes.indexOf(fileType) > -1) {
-					let DriverClass               = require(path.join(__dirname, path.normalize(this.drivers[i].driverFile)));
-					let serverletiables           = this.getServerletiables(req);
-					serverletiables.document_root = path.normalize(dom.baseDirectory + '/');
-					let driver                    = new DriverClass(serverletiables);
-					sentToDriver                  = true;
-					driver.onPost(file, params, DriverCallback);
-				}
-			}
-
-			if(!sentToDriver) {
-				res.writeHead(200, {'Content-Type': mimeType});
-
-				fs.readFile(file, (error, response) => {
-					res.end(response);
-				});
-			}
-
-			if(dom.onPost !== undefined)
-				dom.onPost(req.params, file);
-		};
-
-		dom.dispatcher.onGet(requestURL, handleGetRequest);
-		dom.dispatcher.onPost(requestURL, handlePostRequest);
-
-		if(this.domainIndexSet[dom.host] === undefined) {
-			if(dom.index !== undefined) {
-				if(requestURL == ('/' + dom.index)) {
-					dom.dispatcher.onGet('/', handleGetRequest);
-					dom.dispatcher.onPost('/', handlePostRequest);
-					this.domainIndexSet[dom.host] = true;
-				}
-			}
-			else if(requestURL.indexOf('index') > -1){
-				dom.dispatcher.onGet('/', handleGetRequest);
-				dom.dispatcher.onPost('/', handlePostRequest);
-				this.domainIndexSet[dom.host] = true;
-			}
-		}
-	}
-
 	setupNewDomain(dom) {
 		dom.host       = removeWWW(dom.host);
 		dom.dispatcher = new HttpDispatcher();
@@ -289,7 +119,7 @@ class StarkServer {
 		dom.dispatcher.onError((req, res) => {
 			let fourOhFour           = (dom.error['404'] === undefined ? '404 - Page does not exist.':dom.error['404']);
 			let fourOhFourFilePath   = path.normalize(dom.baseDirectory + '/' + fourOhFour);
-			let fourOhFourFileExists = this.checkIfFileExists(fourOhFourFilePath);
+			let fourOhFourFileExists = util.checkIfFileExists(fourOhFourFilePath);
 
 			res.writeHead(404);
 
@@ -297,22 +127,6 @@ class StarkServer {
 				res.end(fs.readFileSync(fourOhFourFilePath));
 			else res.end(fourOhFour);
 		});
-
-		if(dom.secure) {
-			if(dom.cert !== undefined && dom.key !== undefined) {
-				if(!this.checkIfFileExists(dom.cert) || !this.checkIfFileExists(dom.key))
-					this.logger.warn('Path to SSL certificate or key invalid for domain: ' + dom.host);
-				else {
-					let serverOptions = {
-						key :fs.readFileSync(dom.key),
-						cert:fs.readFileSync(dom.cert)
-					};
-
-					this.server = https.createServer(serverOptions, this.handleRequest);
-				}
-
-			}
-		}
 	}
 
 	/*
@@ -324,28 +138,25 @@ class StarkServer {
 	 */
 
 	addDomain(dom) {
+		let domain = null;
 		if(Array.isArray(dom.host)) {
-			let hosts = dom.host;
-
-			for(let i = 0; i < hosts.length; i++) {
-				let newDom = {
-					host               :hosts[i],
-					baseDirectory      :dom.baseDirectory,
-					allowedFileTypes   :dom.allowedFileTypes,
-					index              :dom.index,
-					filesToIgnore      :dom.filesToIgnore,
-					directoriesToIgnore:dom.directoriesToIgnore,
-					error              :dom.error
-				};
-				
-				this.domains.push(newDom);
-				this.setupNewDomain(newDom);
-			}
+			domain = new Domain(dom.host, dom.baseDirectory);
 		}
 		else {
-			this.domains.push(dom);
-		    this.setupNewDomain(dom);
+			domain = new Domain([dom.host], dom.baseDirectory);
 		}
+
+		domain.setFilesToIgnore(dom.filesToIgnore ? dom.filesToIgnore:[]);
+		domain.setDirectoriesToIgnore(dom.directoriesToIgnore ? dom.directoriesToIgnore:[]);
+		domain.setError(dom.error ? dom.error:{});
+
+		if(dom.allowedFileTypes)
+			domain.setAllowedFileTypes(dom.allowedFileTypes);
+
+		if(dom.index)
+			domain.setIndex(dom.index);
+
+		domain.init();
 	}
 
 	//Takes an array of JSON objects as described above
@@ -355,27 +166,6 @@ class StarkServer {
 				this.addDomain(doms[key]);
 			}
 		}
-	}
-
-	addDriver(driver) {
-		this.drivers.push(driver);
-	}
-
-	addDrivers(drivers) {
-		for (let key in drivers) {
-			if(key !== undefined) {
-				this.addDriver(drivers[key]);
-			}
-		}
-	}
-
-	setAllowedFileTypes(host, types) {
-	    for (let i = this.domains.length - 1; i >= 0; i--) {
-	        if(this.domains[i].host == host) {
-	            this.domains[i].allowedFileTypes = types;
-	            break;
-	        }
-	    }
 	}
 
 	startHTTP() {

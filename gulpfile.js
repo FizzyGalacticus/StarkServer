@@ -10,7 +10,9 @@ gulp.task('build', function() {
 	.pipe(concat('StarkServer.js'))
 	.pipe(babel({
 		presets: [
-			'es2015'
+			'es2015',
+			'es2016',
+			'es2017'
 		]
 	}))
 	.pipe(gulp.dest('./'));
